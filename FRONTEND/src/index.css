@@ -1,1 +1,135 @@
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — CSS variables system
+   Applied by adding class="dark" to <html>
+   Settings.jsx does this automatically when "Dark" is chosen
+   ═══════════════════════════════════════════════════════════ */
+
+/* Light mode (default) */
+:root {
+  --bg-main:        #f9fafb;   /* gray-50  — page background     */
+  --bg-card:        #ffffff;   /* white    — cards / panels       */
+  --bg-navbar:      #ffffff;   /* white    — top nav bar          */
+  --bg-hover:       #f3f4f6;   /* gray-100 — hover state          */
+  --bg-input:       #ffffff;
+  --text-primary:   #111827;   /* gray-900 — headings             */
+  --text-secondary: #6b7280;   /* gray-500 — subtitles            */
+  --text-muted:     #9ca3af;   /* gray-400 — hints                */
+  --border-color:   #e5e7eb;   /* gray-200                        */
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.08);
+}
+
+/* Dark mode — activated when <html class="dark"> */
+html.dark {
+  --bg-main:        #0f0e17;
+  --bg-card:        #1a1a2e;
+  --bg-navbar:      #16213e;
+  --bg-hover:       #1e1e35;
+  --bg-input:       #1e1e35;
+  --text-primary:   #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted:     #64748b;
+  --border-color:   #2d2d44;
+  --shadow-card:    0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ── Apply variables to the main layout ── */
+
+/* Page wrapper background */
+.erp-layout-main {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+/* Navbar */
+.erp-navbar {
+  background-color: var(--bg-navbar);
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+/* All white card/panel surfaces */
+.erp-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  color: var(--text-primary);
+}
+
+/* Input fields */
+.erp-input {
+  background-color: var(--bg-input);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Table rows */
+.erp-table-row:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Text helpers */
+.erp-text-primary   { color: var(--text-primary); }
+.erp-text-secondary { color: var(--text-secondary); }
+.erp-text-muted     { color: var(--text-muted); }
+
+/* Smooth theme transition */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.15s ease;
+}
+
+/* ── Broad override for common Tailwind bg-white / bg-gray-* in dark mode ── */
+html.dark .bg-white {
+  background-color: var(--bg-card) !important;
+}
+html.dark .bg-gray-50 {
+  background-color: var(--bg-main) !important;
+}
+html.dark .bg-gray-100 {
+  background-color: #1e1e35 !important;
+}
+html.dark .border-gray-100,
+html.dark .border-gray-200 {
+  border-color: var(--border-color) !important;
+}
+html.dark .text-gray-800,
+html.dark .text-gray-900,
+html.dark .text-black {
+  color: var(--text-primary) !important;
+}
+html.dark .text-gray-600,
+html.dark .text-gray-700 {
+  color: var(--text-secondary) !important;
+}
+html.dark .text-gray-400,
+html.dark .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+html.dark .shadow,
+html.dark .shadow-sm {
+  box-shadow: var(--shadow-card) !important;
+}
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: var(--bg-input) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+html.dark .border-b {
+  border-color: var(--border-color) !important;
+}
+html.dark .border-b-gray-100 {
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* Animate slide-up for toasts */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.25s ease forwards;
+}

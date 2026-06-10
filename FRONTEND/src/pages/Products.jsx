@@ -10,8 +10,11 @@ function Products() {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [reorderLevel, setReorderLevel] = useState("10");
   const [supplierId, setSupplierId] = useState("");
 
   useEffect(() => {
@@ -41,8 +44,11 @@ function Products() {
     setEditingId(null);
     setName("");
     setDescription("");
+    setCategory("");
+    setSku("");
     setPrice("");
     setStock("");
+    setReorderLevel("10");
     setSupplierId("");
   };
 
@@ -51,8 +57,11 @@ function Products() {
       const payload = {
         name,
         description,
+        category,
+        sku,
         price: Number(price),
         stock: Number(stock),
+        reorder_level: Number(reorderLevel),
         supplier_id: Number(supplierId),
       };
 
@@ -67,17 +76,20 @@ function Products() {
       resetForm();
       fetchProducts();
     } catch (error) {
-      console.error(error);
-      alert("Operation Failed");
+  console.error(error);
+  alert(JSON.stringify(error.response?.data));
     }
   };
 
   const handleEditProduct = (product) => {
     setEditingId(product.id);
     setName(product.name);
-    setDescription(product.description);
+    setDescription(product.description || "");
+    setCategory(product.category || "");
+    setSku(product.sku || "");
     setPrice(product.price);
     setStock(product.stock);
+    setReorderLevel(product.reorder_level);
     setSupplierId(product.supplier_id);
   };
 
@@ -99,11 +111,13 @@ function Products() {
       </h1>
 
       <div className="bg-white p-6 rounded-lg shadow mb-8">
+
         <h2 className="text-xl font-bold mb-4">
           {editingId ? "Edit Product" : "Add Product"}
         </h2>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
           <input
             type="text"
             placeholder="Product Name"
@@ -118,6 +132,22 @@ function Products() {
             className="border p-3 rounded"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+          />
+
+          <input
+            type="text"
+            placeholder="Category"
+            className="border p-3 rounded"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+
+          <input
+            type="text"
+            placeholder="SKU"
+            className="border p-3 rounded"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
           />
 
           <input
@@ -136,12 +166,22 @@ function Products() {
             onChange={(e) => setStock(e.target.value)}
           />
 
+          <input
+            type="number"
+            placeholder="Reorder Level"
+            className="border p-3 rounded"
+            value={reorderLevel}
+            onChange={(e) => setReorderLevel(e.target.value)}
+          />
+
           <select
             className="border p-3 rounded"
             value={supplierId}
             onChange={(e) => setSupplierId(e.target.value)}
           >
-            <option value="">Select Supplier</option>
+            <option value="">
+              Select Supplier
+            </option>
 
             {suppliers.map((supplier) => (
               <option
@@ -152,9 +192,11 @@ function Products() {
               </option>
             ))}
           </select>
+
         </div>
 
         <div className="mt-4 flex gap-3">
+
           <button
             onClick={handleSubmit}
             className="bg-blue-600 text-white px-6 py-3 rounded"
@@ -170,15 +212,20 @@ function Products() {
               Cancel
             </button>
           )}
+
         </div>
       </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
+
         <table className="w-full border-collapse">
+
           <thead>
             <tr className="border-b">
               <th className="text-left p-3">ID</th>
               <th className="text-left p-3">Name</th>
+              <th className="text-left p-3">Category</th>
+              <th className="text-left p-3">SKU</th>
               <th className="text-left p-3">Price</th>
               <th className="text-left p-3">Stock</th>
               <th className="text-left p-3">Actions</th>
@@ -186,14 +233,19 @@ function Products() {
           </thead>
 
           <tbody>
+
             {products.map((product) => (
               <tr key={product.id} className="border-b">
+
                 <td className="p-3">{product.id}</td>
                 <td className="p-3">{product.name}</td>
+                <td className="p-3">{product.category}</td>
+                <td className="p-3">{product.sku}</td>
                 <td className="p-3">₹{product.price}</td>
                 <td className="p-3">{product.stock}</td>
 
                 <td className="p-3 flex gap-2">
+
                   <button
                     onClick={() => handleEditProduct(product)}
                     className="bg-yellow-500 text-white px-3 py-1 rounded"
@@ -203,16 +255,22 @@ function Products() {
 
                   <button
                     onClick={() => handleDeleteProduct(product.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
+
                 </td>
+
               </tr>
             ))}
+
           </tbody>
+
         </table>
+
       </div>
+
     </DashboardLayout>
   );
 }

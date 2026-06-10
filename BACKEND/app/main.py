@@ -1,5 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+load_dotenv()   # loads GEMINI_API_KEY from .env
+
 from app.database.database import engine, Base
 from app.models.employee import Employee
 from app.routers import employee
@@ -18,6 +23,9 @@ from app.routers import sale
 from app.models import sale_item
 from app.routers import sale_item
 from app.routers import invoice
+from app.models import purchase
+from app.routers import purchase
+from app.routers import ai   # ← AI router
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,13 +34,14 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173"
+        "http://localhost:5173",
+        "http://localhost:5174"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.include_router(purchase.router)
 app.include_router(employee.router)
 app.include_router(auth.router)
 app.include_router(product.router)
@@ -42,7 +51,8 @@ app.include_router(customer.router)
 app.include_router(sale.router)
 app.include_router(sale_item.router)
 app.include_router(invoice.router)
+app.include_router(ai.router)       # ← AI endpoints
 
 @app.get("/")
 def home():
-    return {"message": "ERP Backend Running"}
+    return {"message": "ERP Backend Running — RetailFlow AI Edition"}

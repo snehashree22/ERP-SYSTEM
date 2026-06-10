@@ -6,16 +6,18 @@ from openpyxl import Workbook
 from app.schemas.employee import EmployeeCreate
 from app.models.employee import Employee
 from app.database.database import get_db
-from app.auth.auth_bearer import get_current_user
-from app.auth.role_checker import admin_only
+from app.auth.role_checker import admin_only, manager_or_above, any_logged_in_user
 
 router = APIRouter()
 
 
-# CREATE EMPLOYEE
+# CREATE EMPLOYEE — manager or admin only
 @router.post("/employees")
-def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
-
+def create_employee(
+    employee: EmployeeCreate,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(manager_or_above)   # 🔒 manager+
+):
     existing_employee = db.query(Employee).filter(
         Employee.email == employee.email
     ).first()
@@ -43,38 +45,28 @@ def create_employee(employee: EmployeeCreate, db: Session = Depends(get_db)):
     }
 
 
-# GET ALL EMPLOYEES
+# GET ALL EMPLOYEES — any logged-in user
 @router.get("/employees")
 def get_employees(
     db: Session = Depends(get_db),
-    current_user: str = Depends(get_current_user)
+    current_user: dict = Depends(any_logged_in_user)  # 🔒 must be logged in
 ):
-
-    employees = db.query(Employee).all()
-
-    return employees
+    return db.query(Employee).all()
 
 
-# EXPORT EMPLOYEES TO EXCEL
+# EXPORT EMPLOYEES TO EXCEL — admin only
 @router.get("/employees/export")
 def export_employees(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(admin_only)           # 🔒 admin only
 ):
-
     employees = db.query(Employee).all()
 
     workbook = Workbook()
     sheet = workbook.active
-
     sheet.title = "Employees"
 
-    sheet.append([
-        "ID",
-        "Name",
-        "Email",
-        "Department",
-        "Salary"
-    ])
+    sheet.append(["ID", "Name", "Email", "Department", "Salary"])
 
     for employee in employees:
         sheet.append([
@@ -86,7 +78,6 @@ def export_employees(
         ])
 
     file_name = "employees.xlsx"
-
     workbook.save(file_name)
 
     return FileResponse(
@@ -96,40 +87,37 @@ def export_employees(
     )
 
 
-# GET EMPLOYEE BY ID
+# GET EMPLOYEE BY ID — any logged-in user
 @router.get("/employees/{employee_id}")
-def get_employee(employee_id: int, db: Session = Depends(get_db)):
-
+def get_employee(
+    employee_id: int,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(any_logged_in_user)  # 🔒 must be logged in
+):
     employee = db.query(Employee).filter(
         Employee.id == employee_id
     ).first()
 
     if not employee:
-        raise HTTPException(
-            status_code=404,
-            detail="Employee not found"
-        )
+        raise HTTPException(status_code=404, detail="Employee not found")
 
     return employee
 
 
-# UPDATE EMPLOYEE
+# UPDATE EMPLOYEE — manager or admin
 @router.put("/employees/{employee_id}")
 def update_employee(
     employee_id: int,
     updated_employee: EmployeeCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(manager_or_above)    # 🔒 manager+
 ):
-
     employee = db.query(Employee).filter(
         Employee.id == employee_id
     ).first()
 
     if not employee:
-        raise HTTPException(
-            status_code=404,
-            detail="Employee not found"
-        )
+        raise HTTPException(status_code=404, detail="Employee not found")
 
     employee.name = updated_employee.name
     employee.email = updated_employee.email
@@ -138,32 +126,24 @@ def update_employee(
 
     db.commit()
 
-    return {
-        "message": "Employee Updated Successfully"
-    }
+    return {"message": "Employee Updated Successfully"}
 
 
-# DELETE EMPLOYEE
+# DELETE EMPLOYEE — admin only
 @router.delete("/employees/{employee_id}")
 def delete_employee(
     employee_id: int,
     db: Session = Depends(get_db),
-    current_user: dict = Depends(admin_only)
+    current_user: dict = Depends(admin_only)           # 🔒 admin only
 ):
-
     employee = db.query(Employee).filter(
         Employee.id == employee_id
     ).first()
 
     if not employee:
-        raise HTTPException(
-            status_code=404,
-            detail="Employee not found"
-        )
+        raise HTTPException(status_code=404, detail="Employee not found")
 
     db.delete(employee)
     db.commit()
 
-    return {
-        "message": "Employee Deleted Successfully"
-    }
+    return {"message": "Employee Deleted Successfully"}
