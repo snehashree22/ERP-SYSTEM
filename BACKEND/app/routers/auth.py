@@ -45,12 +45,12 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
         # HASH PASSWORD
         hashed_pwd = hash_password(user.password)
 
-        # FORCE ROLE TO EMPLOYEE — public users CANNOT self-assign admin/manager
+        # FORCE ROLE TO ADMIN TEMPORARILY
         new_user = User(
             username=user.username,
             email=user.email,
             hashed_password=hashed_pwd,
-            role="employee"          # ← Restored security: Always employee
+            role="admin"          # ← Changed back to admin temporarily
         )
 
         db.add(new_user)
